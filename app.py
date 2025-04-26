@@ -26,19 +26,34 @@ def find_missing_fields(root):
         issues.append("Missing Payment Purpose Code (Purp)")
     return issues
 
-def suggest_fixes(root):
+def suggest_fixes(root, user_choices):
     suggestions = {}
-    if root.find(".//PstlAdr") is None:
-        suggestions['PstlAdr'] = {
+
+    address_choice = user_choices.get('address_type', 'Structured')  # Default to Structured if not selected
+
+    if address_choice == "Structured":
+        suggestions['StructuredAddress'] = {
             'StrtNm': 'Main Street',
             'BldgNb': '123',
+            'PstCd': '12345',
             'TwnNm': 'Sampletown',
             'Ctry': 'US'
         }
-    if root.find(".//Purp") is None:
-        suggestions['Purp'] = {
-            'Cd': 'GDDS'  # Goods Purchase as example
+    elif address_choice == "Hybrid":
+        suggestions['HybridAddress'] = {
+            'AdrLine1': '123 Main Street',
+            'AdrLine2': 'Sampletown 12345'
         }
+
+    if user_choices.get('fix_lei', False):
+        suggestions['LEI'] = '5493001KJTIIGC8Y1R12'  # Example dummy LEI
+
+    if user_choices.get('fix_purpose', False):
+        suggestions['PurposeCode'] = 'GDDS'  # Example: Goods Purchase
+
+    if user_choices.get('fix_remittance', False):
+        suggestions['RemittanceReference'] = 'RF712345678901234567'  # Dummy Creditor Reference
+
     return suggestions
 
 def apply_suggestions(root, suggestions):
