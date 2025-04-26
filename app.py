@@ -79,33 +79,75 @@ def suggest_fixes(root, user_choices):
     return suggestions
 
 def apply_suggestions(root, suggestions):
-    dbtr = root.find(".//Dbtr")
-    if 'PstlAdr' in suggestions and dbtr is not None:
-        pstlAdr = dbtr.find("PstlAdr")
-        if pstlAdr is None:
-            pstlAdr = ET.SubElement(dbtr, "PstlAdr")
-            for k, v in suggestions['PstlAdr'].items():
-                ET.SubElement(pstlAdr, k).text = v
+    # Apply Structured Address if available
+    if 'StructuredAddress' in suggestions:
+        dbtr = root.find(".//Dbtr")
+        if dbtr is not None:
+            pstlAdr = dbtr.find("PstlAdr")
+            if pstlAdr is None:
+                pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+            for field, value in suggestions['StructuredAddress'].items():
+                ET.SubElement(pstlAdr, field).text = value
 
-    if 'Purp' in suggestions:
-        # Find the CdtTrfTxInf block
+    # Apply Hybrid Address if available
+    if 'HybridAddress' in suggestions:
+        dbtr = root.find(".//Dbtr")
+        if dbtr is not None:
+            pstlAdr = dbtr.find("PstlAdr")
+            if pstlAdr is None:
+                pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+            for i, (key, value) in enumerate(suggestions['HybridAddress'].items()):
+                adrLine = ET.SubElement(pstlAdr, "AdrLine")
+                adrLine.text = value
+
+    # Apply LEI if available
+    if 'LEI' in suggestions:
+        dbtr = root.find(".//Dbtr")
+        if dbtr is not None:
+            id_elem = dbtr.find("Id")
+            if id_elem is None:
+                id_elem = ET.SubElement(dbtr, "Id")
+            org_id = id_elem.find("OrgId")
+            if org_id is None:
+                org_id = ET.SubElement(id_elem, "OrgId")
+            lei = org_id.find("LEI")
+            if lei is None:
+                lei = ET.SubElement(org_id, "LEI")
+            lei.text = suggestions['LEI']
+
+    # Apply Purpose Code if available
+    if 'PurposeCode' in suggestions:
         cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
         if cdt_trf_tx_inf is not None:
-            # Check if PmtTpInf already exists
             pmt_tp_inf = cdt_trf_tx_inf.find("PmtTpInf")
             if pmt_tp_inf is None:
                 pmt_tp_inf = ET.SubElement(cdt_trf_tx_inf, "PmtTpInf")
-            
             purp = pmt_tp_inf.find("Purp")
             if purp is None:
                 purp = ET.SubElement(pmt_tp_inf, "Purp")
-            
             cd = purp.find("Cd")
             if cd is None:
                 cd = ET.SubElement(purp, "Cd")
-            
-            cd.text = suggestions['Purp']['Cd']
-            
+            cd.text = suggestions['PurposeCode']
+
+    # Apply Remittance Reference if available
+    if 'RemittanceReference' in suggestions:
+        cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
+        if cdt_trf_tx_inf is not None:
+            rmt_inf = cdt_trf_tx_inf.find("RmtInf")
+            if rmt_inf is None:
+                rmt_inf = ET.SubElement(cdt_trf_tx_inf, "RmtInf")
+            strd = rmt_inf.find("Strd")
+            if strd is None:
+                strd = ET.SubElement(rmt_inf, "Strd")
+            cdtr_ref_inf = strd.find("CdtrRefInf")
+            if cdtr_ref_inf is None:
+                cdtr_ref_inf = ET.SubElement(strd, "CdtrRefInf")
+            ref = cdtr_ref_inf.find("Ref")
+            if ref is None:
+                ref = ET.SubElement(cdtr_ref_inf, "Ref")
+            ref.text = suggestions['RemittanceReference']
+
     return root
 
 def prettify_xml(elem):
