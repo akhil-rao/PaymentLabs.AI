@@ -11,7 +11,7 @@ Explore our smart assistants below:
 
 st.markdown("""
 ### 🧩 Available Modules:
-- 🛠️ **Smart Payment Repair Assistant** – Fix structure, enrich fields, and Swift CBPR+ compliance.
+- 🛠️ **Swift CBPR+ Structured Payment Copilot** – Fix structure, enrich fields, and Swift CBPR+ compliance.
 - 🛡️ **Sanctions Follow-Up Agent** – (Coming Soon)
 - 🔄 **AI Reconciliation Assistant** – (Coming Soon)
 - 🕵️‍♂️ **Payment Investigations Agent** – (Coming Soon)
