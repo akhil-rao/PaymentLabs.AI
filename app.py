@@ -3,6 +3,28 @@ import xml.etree.ElementTree as ET
 import io
 from lxml import etree
 
+def build_final_envelope(apphdr_xml, document_xml):
+    NSMAP = {
+        'env': 'urn:swift:xsd:envelope',
+        'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
+    }
+    
+    envelope = etree.Element("{urn:swift:xsd:envelope}Envelope", nsmap=NSMAP)
+
+    # Parse AppHdr
+    apphdr = etree.fromstring(apphdr_xml)
+    apphdr.attrib['xmlns'] = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02'
+
+    # Parse Document
+    document = etree.fromstring(document_xml)
+    document.attrib['xmlns'] = 'urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08'
+
+    # Attach them inside Envelope
+    envelope.append(apphdr)
+    envelope.append(document)
+
+    return etree.tostring(envelope, pretty_print=True, encoding='unicode')
+
 # ---- Helper Functions ----
 def parse_xml(xml_string):
     try:
