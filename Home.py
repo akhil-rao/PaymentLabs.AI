@@ -1,5 +1,16 @@
 import streamlit as st
 
+# ---- Force Browser Tab Title (Remove Streamlit from Tab) ----
+st.markdown(
+    """
+    <script>
+    var newTitle = "Transact-AI Sandbox";
+    document.title = newTitle;
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
 # ---- Streamlit Page Setup ----
 st.set_page_config(page_title="Transact-AI Sandbox", layout="wide")
 
