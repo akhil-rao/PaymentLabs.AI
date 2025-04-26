@@ -53,7 +53,7 @@ def prettify_xml(elem):
 
 # ---- Streamlit App ----
 st.set_page_config(page_title="Smart Payment Repair Copilot", layout="wide")
-st.title("\ud83d\ude80 Smart Payment Repair Copilot")
+st.title("Smart Payment Repair Copilot")
 
 uploaded_file = st.file_uploader("Upload Payment XML", type=["xml"])
 example_xml = """
