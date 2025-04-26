@@ -172,8 +172,8 @@ def prettify_xml(elem):
 
 # ---- Streamlit App ----
 
-st.set_page_config(page_title="Smart Payment Repair Copilot", layout="wide")
-st.title("🚀 Smart Payment Repair Copilot")
+st.set_page_config(page_title="Transact-AI Sandbox - Smart Payment Repair", layout="wide")
+st.title("🛠️ Transact-AI Smart Payment Repair Assistant")
 
 st.subheader("📂 Upload Your Payment XML")
 uploaded_file = st.file_uploader("Choose a Payment XML File", type=["xml"])
@@ -226,7 +226,7 @@ if uploaded_file:
                 'fix_remittance': fix_remittance
             }
 
-            if st.button("✨ Apply Copilot Suggestions"):
+            if st.button("✨ Apply Transact-AI Repair"):
                 suggestions = suggest_fixes(root, user_choices)
                 original_root = parse_xml(xml_content)  # Keep the original untouched
                 repaired_root = apply_suggestions(root, suggestions)
