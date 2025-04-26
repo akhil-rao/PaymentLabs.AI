@@ -5,7 +5,14 @@ import io
 # ---- Helper Functions ----
 def parse_xml(xml_string):
     try:
+        # Parse the XML
         root = ET.fromstring(xml_string)
+        
+        # Check and clean namespaces if they exist
+        for elem in root.iter():
+            if elem.tag.startswith('{'):
+                elem.tag = elem.tag.split('}', 1)[1]  # Remove namespace part
+        
         return root
     except ET.ParseError:
         return None
