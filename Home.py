@@ -4,7 +4,7 @@ st.set_page_config(page_title="Transact-AI Sandbox", layout="wide")
 st.title("🚀 Welcome to Transact-AI Sandbox")
 
 st.markdown("""
-Welcome to **Transact-AI Sandbox** — your AI-powered workspace for intelligent payment operations.
+Shaping the Future of Payments with AI-Driven ISO 20022 Structured Intelligence.
 
 Explore our smart assistants below:
 """)
