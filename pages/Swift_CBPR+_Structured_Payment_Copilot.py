@@ -170,6 +170,7 @@ def prettify_xml(elem):
     rough_string = ET.tostring(elem, 'utf-8')
     return rough_string.decode('utf-8')
 
+
 # ---- Streamlit App ----
 
 st.set_page_config(page_title="Swift CBPR+ Structured Payment Copilot", layout="wide")
@@ -226,12 +227,13 @@ if uploaded_file:
                 'fix_remittance': fix_remittance
             }
 
-            if st.button("✨ Apply Copilot Suggestions"):
+            if st.button("🚀 Apply Copilot Suggestions", key="apply_copilot"):
                 suggestions = suggest_fixes(root, user_choices)
-                original_root = parse_xml(xml_content)  # Keep the original untouched
+                original_root = parse_xml(xml_content)
                 repaired_root = apply_suggestions(root, suggestions)
                 st.success("✅ Suggestions Applied!")
 
+                # Generate Repaired Swift Envelope
                 fixed_xml_string = prettify_xml(repaired_root)
 
                 start_apphdr = fixed_xml_string.find("<AppHdr")
@@ -244,82 +246,48 @@ if uploaded_file:
 
                 final_xml = build_final_envelope(apphdr_xml, document_xml)
 
-if st.button("✨ Apply Copilot Suggestions"):
-    suggestions = suggest_fixes(root, user_choices)
-    original_root = parse_xml(xml_content)  # Keep the original untouched
-    repaired_root = apply_suggestions(root, suggestions)
-    st.success("✅ Suggestions Applied!")
+                # --- Show Before vs After ---
+                st.subheader("📝 Before vs ✨ After Comparison")
 
-    fixed_xml_string = prettify_xml(repaired_root)
+                col1, col2 = st.columns(2)
 
-    start_apphdr = fixed_xml_string.find("<AppHdr")
-    end_apphdr = fixed_xml_string.find("</AppHdr>") + len("</AppHdr>")
-    apphdr_xml = fixed_xml_string[start_apphdr:end_apphdr]
+                with col1:
+                    st.markdown("### 📝 Original Message")
+                    st.code(prettify_xml(original_root), language='xml')
 
-    start_doc = fixed_xml_string.find("<Document")
-    end_doc = fixed_xml_string.find("</Document>") + len("</Document>")
-    document_xml = fixed_xml_string[start_doc:end_doc]
+                with col2:
+                    st.markdown("### ✨ Repaired Message")
+                    st.code(final_xml, language='xml')
 
-    final_xml = build_final_envelope(apphdr_xml, document_xml)
+                # --- Changes Summary ---
+                st.subheader("🛠️ Fields Updated by Copilot")
+                changes_made = []
+                if user_choices.get('fix_lei', False):
+                    changes_made.append("• Debtor LEI added or updated")
+                if user_choices.get('fix_purpose', False):
+                    changes_made.append("• Purpose Code (Purp) added or updated")
+                if user_choices.get('fix_remittance', False):
+                    changes_made.append("• Remittance Information (RmtInf) added or updated")
+                if address_type:
+                    changes_made.append(f"• Address structured as **{address_type} Address**")
 
-    # -- Now show Before vs After safely! --
+                if changes_made:
+                    st.success("\n".join(changes_made))
+                else:
+                    st.info("No structural changes were required.")
 
-    st.subheader("📝 Before vs ✨ After Comparison")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("### 📝 Original Message")
-        st.markdown(
-            f"""
-            <div style='background-color:#f0f2f6; padding:10px; border-radius:10px; font-family:monospace; overflow-wrap: break-word; word-wrap: break-word; font-size: 14px'>
-            {prettify_xml(original_root).replace('<', '&lt;').replace('>', '&gt;')}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with col2:
-        st.markdown("### ✨ Repaired Message")
-        st.markdown(
-            f"""
-            <div style='background-color:#e0f7fa; padding:10px; border-radius:10px; font-family:monospace; overflow-wrap: break-word; word-wrap: break-word; font-size: 14px'>
-            {final_xml.replace('<', '&lt;').replace('>', '&gt;')}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    # --- Changes summary ---
-    st.subheader("🛠️ Fields Updated by Copilot")
-
-    changes_made = []
-
-    if user_choices.get('fix_lei', False):
-        changes_made.append("• Debtor LEI added or updated")
-    if user_choices.get('fix_purpose', False):
-        changes_made.append("• Purpose Code (Purp) added or updated")
-    if user_choices.get('fix_remittance', False):
-        changes_made.append("• Remittance Information (RmtInf) added or updated")
-    if address_type:
-        changes_made.append(f"• Address structured as **{address_type} Address**")
-
-    if changes_made:
-        st.success("\n".join(changes_made))
-    else:
-        st.info("No structural changes were required.")
-
-    # --- Allow user to download final XML ---
-    st.subheader("⬇️ Download Repaired Swift CBPR+ XML")
-    st.download_button(
-        label="Download Repaired XML",
-        data=final_xml,
-        file_name="repaired_payment.xml",
-        mime="application/xml"
-    )
+                st.subheader("⬇️ Download Repaired Swift CBPR+ XML")
+                st.download_button(
+                    label="Download Repaired XML",
+                    data=final_xml,
+                    file_name="repaired_payment.xml",
+                    mime="application/xml"
+                )
+        else:
+            st.success("✅ No issues found. Payment is clean!")
+            st.code(prettify_xml(root), language='xml')
 
 # ---- Custom Footer ----
-
 st.markdown(
     """
     <style>
