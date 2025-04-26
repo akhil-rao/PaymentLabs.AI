@@ -43,15 +43,31 @@ def suggest_fixes(root):
 def apply_suggestions(root, suggestions):
     dbtr = root.find(".//Dbtr")
     if 'PstlAdr' in suggestions and dbtr is not None:
-        pstlAdr = ET.SubElement(dbtr, "PstlAdr")
-        for k, v in suggestions['PstlAdr'].items():
-            ET.SubElement(pstlAdr, k).text = v
-    pmtTpInf = root.find(".//PmtTpInf")
-    if pmtTpInf is None:
-        pmtTpInf = ET.SubElement(root, "PmtTpInf")
+        pstlAdr = dbtr.find("PstlAdr")
+        if pstlAdr is None:
+            pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+            for k, v in suggestions['PstlAdr'].items():
+                ET.SubElement(pstlAdr, k).text = v
+
     if 'Purp' in suggestions:
-        purp = ET.SubElement(pmtTpInf, "Purp")
-        ET.SubElement(purp, "Cd").text = suggestions['Purp']['Cd']
+        # Find the CdtTrfTxInf block
+        cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
+        if cdt_trf_tx_inf is not None:
+            # Check if PmtTpInf already exists
+            pmt_tp_inf = cdt_trf_tx_inf.find("PmtTpInf")
+            if pmt_tp_inf is None:
+                pmt_tp_inf = ET.SubElement(cdt_trf_tx_inf, "PmtTpInf")
+            
+            purp = pmt_tp_inf.find("Purp")
+            if purp is None:
+                purp = ET.SubElement(pmt_tp_inf, "Purp")
+            
+            cd = purp.find("Cd")
+            if cd is None:
+                cd = ET.SubElement(purp, "Cd")
+            
+            cd.text = suggestions['Purp']['Cd']
+            
     return root
 
 def prettify_xml(elem):
