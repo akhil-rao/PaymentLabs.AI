@@ -16,7 +16,7 @@ st.markdown("""
 - 🔄 **AI Reconciliation Assistant** – (Coming Soon)
 - 🕵️‍♂️ **Payment Investigations Agent** – (Coming Soon)
 - 💧 **Liquidity Management Copilot** – (Coming Soon)
-- 📋 **Compliance Reporter Agent** – (Coming Soon)
+- 📋 **Compliance Reporting Agent** – (Coming Soon)
 - 🧹 **Payment Data Quality Checker** – (Coming Soon)
 - 🌍 **Cross-Border Cost Predictor** – (Coming Soon)
 - 🛡️ **Fraud Risk Investigator** – (Coming Soon)
