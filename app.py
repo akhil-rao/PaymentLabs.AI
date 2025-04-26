@@ -128,6 +128,28 @@ if uploaded_file:
             st.warning("Issues Found:")
             for issue in issues:
                 st.write(f"- {issue}")
+                # 🧩 Copilot Repair Options Section
+st.subheader("Copilot Repair Options")
+
+# Address type choice
+address_type = st.radio(
+    "Choose Address Type:",
+    ("Structured", "Hybrid"),
+    index=0
+)
+
+# Checkboxes for optional fixes
+fix_lei = st.checkbox("Fix Missing LEI")
+fix_purpose = st.checkbox("Fix Missing Purpose Code")
+fix_remittance = st.checkbox("Fix Missing Remittance Information")
+
+# Collect user choices into a dictionary
+user_choices = {
+    'address_type': address_type,
+    'fix_lei': fix_lei,
+    'fix_purpose': fix_purpose,
+    'fix_remittance': fix_remittance
+}
 
             suggestions = suggest_fixes(root)
            if st.button("Apply Copilot Suggestions"):
