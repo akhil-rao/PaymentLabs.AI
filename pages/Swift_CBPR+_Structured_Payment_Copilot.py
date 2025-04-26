@@ -244,11 +244,10 @@ if uploaded_file:
 
                 final_xml = build_final_envelope(apphdr_xml, document_xml)
 
-               st.subheader("📝 Before vs ✨ After Comparison")
+st.subheader("📝 Before vs ✨ After Comparison")
 
 col1, col2 = st.columns(2)
 
-# --- Column 1: Original Message ---
 with col1:
     st.markdown("### 📝 Original Message")
     st.markdown(
@@ -260,7 +259,6 @@ with col1:
         unsafe_allow_html=True
     )
 
-# --- Column 2: Repaired Message ---
 with col2:
     st.markdown("### ✨ Repaired Message")
     st.markdown(
@@ -272,7 +270,6 @@ with col2:
         unsafe_allow_html=True
     )
 
-# --- New: Change Summary ---
 st.subheader("🛠️ Fields Updated by Copilot")
 
 changes_made = []
@@ -290,6 +287,7 @@ if changes_made:
     st.success("\n".join(changes_made))
 else:
     st.info("No structural changes were required.")
+
 
 # ---- Custom Footer ----
 
