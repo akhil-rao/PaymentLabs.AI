@@ -173,9 +173,13 @@ def prettify_xml(elem):
 # ---- Streamlit App ----
 
 st.set_page_config(page_title="Smart Payment Repair Copilot", layout="wide")
-st.title("Smart Payment Repair Copilot")
+st.title("🚀 Smart Payment Repair Copilot")
 
-uploaded_file = st.file_uploader("Upload Payment XML", type=["xml"])
+st.subheader("📂 Upload Your Payment XML")
+uploaded_file = st.file_uploader("Choose a Payment XML File", type=["xml"])
+
+st.caption("Or use an example file below:")
+
 example_xml = """
 <pacs.008>
   <Dbtr>
@@ -198,19 +202,17 @@ if uploaded_file:
     root = parse_xml(xml_content)
 
     if root is None:
-        st.error("Invalid XML format. Please upload a valid pacs.008 message.")
+        st.error("❌ Invalid XML format. Please upload a valid pacs.008 message.")
     else:
-        st.subheader("Original Message")
-        st.code(prettify_xml(root), language='xml')
-
+        st.subheader("🔍 Detected Issues")
         issues = find_missing_fields(root)
 
         if issues:
-            st.warning("Issues Found:")
+            st.warning("We found the following issues in your payment XML:")
             for issue in issues:
                 st.write(f"- {issue}")
 
-            st.subheader("Copilot Repair Options")
+            st.subheader("🛠️ Select Repair Actions")
 
             address_type = st.radio("Choose Address Type:", ("Structured", "Hybrid"), index=0)
             fix_lei = st.checkbox("Fix Missing LEI")
@@ -224,12 +226,14 @@ if uploaded_file:
                 'fix_remittance': fix_remittance
             }
 
-            if st.button("Apply Copilot Suggestions"):
+            if st.button("✨ Apply Copilot Suggestions"):
                 suggestions = suggest_fixes(root, user_choices)
-                root = apply_suggestions(root, suggestions)
-                st.success("Suggestions Applied!")
+                original_root = parse_xml(xml_content)  # Keep the original untouched
+                repaired_root = apply_suggestions(root, suggestions)
+                st.success("✅ Suggestions Applied!")
 
-                fixed_xml_string = prettify_xml(root)
+                # Prepare repaired Swift envelope
+                fixed_xml_string = prettify_xml(repaired_root)
 
                 start_apphdr = fixed_xml_string.find("<AppHdr")
                 end_apphdr = fixed_xml_string.find("</AppHdr>") + len("</AppHdr>")
@@ -241,14 +245,25 @@ if uploaded_file:
 
                 final_xml = build_final_envelope(apphdr_xml, document_xml)
 
-                st.subheader("Repaired Swift CBPR+ Message")
-                st.code(final_xml, language='xml')
+                st.subheader("📝 Before vs ✨ After Comparison")
 
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("### 📝 Original Message")
+                    st.code(prettify_xml(original_root), language='xml')
+
+                with col2:
+                    st.markdown("### ✨ Repaired Message")
+                    st.code(final_xml, language='xml')
+
+                st.subheader("⬇️ Download Repaired Swift CBPR+ XML")
                 st.download_button(
-                    label="Download Repaired Swift XML",
+                    label="Download Repaired XML",
                     data=final_xml,
                     file_name="repaired_payment.xml",
                     mime="application/xml"
                 )
         else:
-            st.success("No issues found. Payment is clean!")
+            st.success("✅ No issues found. Payment is clean!")
+            st.code(prettify_xml(root), language='xml')
