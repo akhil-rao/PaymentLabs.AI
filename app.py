@@ -151,8 +151,9 @@ user_choices = {
     'fix_remittance': fix_remittance
 }
 
-            suggestions = suggest_fixes(root)
-           if st.button("Apply Copilot Suggestions"):
+            suggestions = suggest_fixes(root, user_choices)
+          if st.button("Apply Copilot Suggestions"):
+    suggestions = suggest_fixes(root, user_choices)  # <-- Call suggest_fixes properly
     root = apply_suggestions(root, suggestions)
     st.success("Suggestions Applied!")
 
