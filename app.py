@@ -48,74 +48,40 @@ def find_missing_fields(root):
         issues.append("Missing Payment Purpose Code (Purp)")
     return issues
 
-def suggest_fixes(root, user_choices):
-    suggestions = {}
-
-    address_choice = user_choices.get('address_type', 'Structured')  # Default to Structured if not selected
-
-    if address_choice == "Structured":
-        suggestions['StructuredAddress'] = {
-            'StrtNm': 'Main Street',
-            'BldgNb': '123',
-            'PstCd': '12345',
-            'TwnNm': 'Sampletown',
-            'Ctry': 'US'
-        }
-    elif address_choice == "Hybrid":
-        suggestions['HybridAddress'] = {
-            'AdrLine1': '123 Main Street',
-            'AdrLine2': 'Sampletown 12345'
-        }
-
-    if user_choices.get('fix_lei', False):
-        suggestions['LEI'] = '5493001KJTIIGC8Y1R12'  # Example dummy LEI
-
-    if user_choices.get('fix_purpose', False):
-        suggestions['PurposeCode'] = 'GDDS'  # Example: Goods Purchase
-
-    if user_choices.get('fix_remittance', False):
-        suggestions['RemittanceReference'] = 'RF712345678901234567'  # Dummy Creditor Reference
-
-    return suggestions
-
 def apply_suggestions(root, suggestions):
-    # Apply Structured Address if available
-    if 'StructuredAddress' in suggestions:
-        dbtr = root.find(".//Dbtr")
-        if dbtr is not None:
-            pstlAdr = dbtr.find("PstlAdr")
-            if pstlAdr is None:
-                pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+    # Apply Structured or Hybrid Address cleanly
+    dbtr = root.find(".//Dbtr")
+    if dbtr is not None:
+        pstlAdr = dbtr.find("PstlAdr")
+        if pstlAdr is None:
+            pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+        else:
+            # Clear existing address fields
+            pstlAdr.clear()
+
+        if 'StructuredAddress' in suggestions:
             for field, value in suggestions['StructuredAddress'].items():
                 ET.SubElement(pstlAdr, field).text = value
 
-    # Apply Hybrid Address if available
-    if 'HybridAddress' in suggestions:
-        dbtr = root.find(".//Dbtr")
-        if dbtr is not None:
-            pstlAdr = dbtr.find("PstlAdr")
-            if pstlAdr is None:
-                pstlAdr = ET.SubElement(dbtr, "PstlAdr")
-            for i, (key, value) in enumerate(suggestions['HybridAddress'].items()):
+        if 'HybridAddress' in suggestions:
+            for field, value in suggestions['HybridAddress'].items():
                 adrLine = ET.SubElement(pstlAdr, "AdrLine")
                 adrLine.text = value
 
-    # Apply LEI if available
+    # Apply LEI cleanly
     if 'LEI' in suggestions:
-        dbtr = root.find(".//Dbtr")
-        if dbtr is not None:
-            id_elem = dbtr.find("Id")
-            if id_elem is None:
-                id_elem = ET.SubElement(dbtr, "Id")
-            org_id = id_elem.find("OrgId")
-            if org_id is None:
-                org_id = ET.SubElement(id_elem, "OrgId")
-            lei = org_id.find("LEI")
-            if lei is None:
-                lei = ET.SubElement(org_id, "LEI")
-            lei.text = suggestions['LEI']
+        id_elem = dbtr.find("Id")
+        if id_elem is None:
+            id_elem = ET.SubElement(dbtr, "Id")
+        org_id = id_elem.find("OrgId")
+        if org_id is None:
+            org_id = ET.SubElement(id_elem, "OrgId")
+        lei = org_id.find("LEI")
+        if lei is None:
+            lei = ET.SubElement(org_id, "LEI")
+        lei.text = suggestions['LEI']
 
-    # Apply Purpose Code if available
+    # Apply Purpose Code
     if 'PurposeCode' in suggestions:
         cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
         if cdt_trf_tx_inf is not None:
@@ -130,7 +96,7 @@ def apply_suggestions(root, suggestions):
                 cd = ET.SubElement(purp, "Cd")
             cd.text = suggestions['PurposeCode']
 
-    # Apply Remittance Reference if available
+    # Apply Remittance Reference
     if 'RemittanceReference' in suggestions:
         cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
         if cdt_trf_tx_inf is not None:
