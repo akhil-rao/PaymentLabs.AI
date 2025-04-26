@@ -40,54 +40,23 @@ def find_missing_fields(root):
 def suggest_fixes(root, user_choices):
     suggestions = {}
     address_choice = user_choices.get('address_type', 'Structured')
-    if address_choice == "Structured":
-        suggestions['StructuredAddress'] = {
-            'StrtNm': 'Main Street',
-            'BldgNb': '123',
-            'PstCd': '12345',
-            'TwnNm': 'Sampletown',
-            'Ctry': 'US'
-        }
-    elif address_choice == "Hybrid":
-        suggestions['HybridAddress'] = {
-            'AdrLine1': '123 Main Street',
-            'AdrLine2': 'Sampletown 12345'
-        }
-    if user_choices.get('fix_lei', False):
-        suggestions['LEI'] = '5493001KJTIIGC8Y1R12'
-    if user_choices.get('fix_purpose', False):
-        suggestions['PurposeCode'] = 'GDDS'
-    if user_choices.get('fix_remittance', False):
-        suggestions['RemittanceReference'] = 'RF712345678901234567'
-    return suggestions
-
-def suggest_fixes(root, user_choices):
-    suggestions = {}
-    address_choice = user_choices.get('address_type', 'Structured')
 
     dbtr = root.find(".//Dbtr")
     if dbtr is not None:
         pstlAdr = dbtr.find("PstlAdr")
-
         if pstlAdr is not None:
             existing_fields = {child.tag: child.text for child in pstlAdr}
 
             if address_choice == "Structured":
-                # Try to split AdrLine into StrtNm and BldgNb and PstCd etc. if AdrLine is present
                 if "AdrLine" in existing_fields or any(child.tag == "AdrLine" for child in pstlAdr):
                     adr_lines = [child.text for child in pstlAdr if child.tag == "AdrLine"]
                     if adr_lines:
-                        # Basic smart parsing
                         line1 = adr_lines[0]
                         line2 = adr_lines[1] if len(adr_lines) > 1 else ''
-
-                        # Assume BldgNb and StrtNm are in line1
                         if ' ' in line1:
                             bldg, street = line1.split(' ', 1)
                         else:
                             bldg, street = '', line1
-
-                        # Assume postcode and town are in line2
                         if ' ' in line2:
                             postcode, town = line2.split(' ', 1)
                         else:
@@ -98,10 +67,9 @@ def suggest_fixes(root, user_choices):
                             'StrtNm': street.strip(),
                             'PstCd': postcode.strip(),
                             'TwnNm': town.strip(),
-                            'Ctry': existing_fields.get('Ctry', 'SG')  # Use existing Ctry if available
+                            'Ctry': existing_fields.get('Ctry', 'SG')
                         }
                 else:
-                    # If already structured fields exist, just reuse them
                     suggestions['StructuredAddress'] = {
                         'StrtNm': existing_fields.get('StrtNm', ''),
                         'BldgNb': existing_fields.get('BldgNb', ''),
@@ -113,7 +81,6 @@ def suggest_fixes(root, user_choices):
             elif address_choice == "Hybrid":
                 adr_lines = [child.text for child in pstlAdr if child.tag == "AdrLine"]
                 if not adr_lines:
-                    # Build AdrLines from StrtNm and BldgNb
                     line1 = f"{existing_fields.get('BldgNb', '')} {existing_fields.get('StrtNm', '')}".strip()
                     line2 = f"{existing_fields.get('PstCd', '')} {existing_fields.get('TwnNm', '')}".strip()
                     adr_lines = [line1, line2]
@@ -125,17 +92,79 @@ def suggest_fixes(root, user_choices):
                     'Ctry': existing_fields.get('Ctry', 'SG')
                 }
 
-    # Other fields (LEI, Purpose Code, Remittance) same logic
     if user_choices.get('fix_lei', False):
         suggestions['LEI'] = '5493001KJTIIGC8Y1R12'
-
     if user_choices.get('fix_purpose', False):
         suggestions['PurposeCode'] = 'GDDS'
-
     if user_choices.get('fix_remittance', False):
         suggestions['RemittanceReference'] = 'RF712345678901234567'
-
     return suggestions
+
+def apply_suggestions(root, suggestions):
+    dbtr = root.find(".//Dbtr")
+    if dbtr is not None:
+        pstlAdr = dbtr.find("PstlAdr")
+        if pstlAdr is None:
+            pstlAdr = ET.SubElement(dbtr, "PstlAdr")
+        else:
+            pstlAdr.clear()
+
+        if 'StructuredAddress' in suggestions:
+            for field, value in suggestions['StructuredAddress'].items():
+                ET.SubElement(pstlAdr, field).text = value
+
+        if 'HybridAddress' in suggestions:
+            for key, value in suggestions['HybridAddress'].items():
+                if key.startswith('AdrLine'):
+                    adrLine = ET.SubElement(pstlAdr, "AdrLine")
+                    adrLine.text = value
+                else:
+                    ET.SubElement(pstlAdr, key).text = value
+
+    if 'LEI' in suggestions:
+        id_elem = dbtr.find("Id")
+        if id_elem is None:
+            id_elem = ET.SubElement(dbtr, "Id")
+        org_id = id_elem.find("OrgId")
+        if org_id is None:
+            org_id = ET.SubElement(id_elem, "OrgId")
+        lei = org_id.find("LEI")
+        if lei is None:
+            lei = ET.SubElement(org_id, "LEI")
+        lei.text = suggestions['LEI']
+
+    if 'PurposeCode' in suggestions:
+        cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
+        if cdt_trf_tx_inf is not None:
+            pmt_tp_inf = cdt_trf_tx_inf.find("PmtTpInf")
+            if pmt_tp_inf is None:
+                pmt_tp_inf = ET.SubElement(cdt_trf_tx_inf, "PmtTpInf")
+            purp = pmt_tp_inf.find("Purp")
+            if purp is None:
+                purp = ET.SubElement(pmt_tp_inf, "Purp")
+            cd = purp.find("Cd")
+            if cd is None:
+                cd = ET.SubElement(purp, "Cd")
+            cd.text = suggestions['PurposeCode']
+
+    if 'RemittanceReference' in suggestions:
+        cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
+        if cdt_trf_tx_inf is not None:
+            rmt_inf = cdt_trf_tx_inf.find("RmtInf")
+            if rmt_inf is None:
+                rmt_inf = ET.SubElement(cdt_trf_tx_inf, "RmtInf")
+            strd = rmt_inf.find("Strd")
+            if strd is None:
+                strd = ET.SubElement(rmt_inf, "Strd")
+            cdtr_ref_inf = strd.find("CdtrRefInf")
+            if cdtr_ref_inf is None:
+                cdtr_ref_inf = ET.SubElement(strd, "CdtrRefInf")
+            ref = cdtr_ref_inf.find("Ref")
+            if ref is None:
+                ref = ET.SubElement(cdtr_ref_inf, "Ref")
+            ref.text = suggestions['RemittanceReference']
+
+    return root
 
 def prettify_xml(elem):
     rough_string = ET.tostring(elem, 'utf-8')
@@ -181,7 +210,6 @@ if uploaded_file:
             for issue in issues:
                 st.write(f"- {issue}")
 
-            # 🧩 Copilot Repair Options Section inside issues block
             st.subheader("Copilot Repair Options")
 
             address_type = st.radio("Choose Address Type:", ("Structured", "Hybrid"), index=0)
