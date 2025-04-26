@@ -2,15 +2,21 @@ import streamlit as st
 
 # ---- Streamlit Page Setup ----
 st.set_page_config(page_title="Transact-AI Sandbox", layout="wide")
-st.title("🚀 Welcome to Transact-AI Sandbox")
 
-# ---- Custom CSS Styling (Montserrat + Colors) ----
+# ---- Custom CSS Styling ----
 st.markdown(
     """
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
     html, body, [class*="css"]  {
         font-family: 'Montserrat', sans-serif;
+    }
+    .main-title {
+        color: #015C92;
+        font-size: 36px;
+        font-weight: 700;
+        text-align: center;
+        margin-top: -30px;
     }
     .custom-text {
         color: #023d69;
@@ -27,6 +33,8 @@ st.markdown(
 )
 
 # ---- Home Page Content ----
+st.markdown('<div class="main-title">🚀 Welcome to Transact-AI Sandbox</div>', unsafe_allow_html=True)
+
 st.markdown("""
 <div class="custom-text">
 Welcome to <b>Transact-AI Sandbox</b> — a next-generation workspace where <b>AI</b> meets <b>ISO 20022 structured data</b> to transform cross-border payment operations.
