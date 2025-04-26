@@ -3,9 +3,9 @@ import streamlit as st
 # ---- Sidebar Layout ----
 with st.sidebar:
     st.markdown("## 🚀 Transact-AI Sandbox")
-    st.page_link("Home", label="🏠 Home")
-    st.page_link("About", label="ℹ️ About")
-    
+    st.page_link("pages/Home.py", label="🏠 Home")
+    st.page_link("pages/About.py", label="ℹ️ About")
+
     st.markdown("---")
     st.markdown("### 🛠 Available Modules")
     st.page_link("pages/1_Swift_CBPR+_Structured_Payment_Copilot.py", label="🔷 Swift CBPR+ Payment Copilot")
