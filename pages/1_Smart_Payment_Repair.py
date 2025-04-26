@@ -95,7 +95,7 @@ if uploaded_file:
                 root = apply_suggestions(root, suggestions)
                 st.success("Suggestions Applied!")
 
-                st.subheader("\ud83c\udf0a Repaired Message")
+                st.subheader("Repaired Message")
                 st.code(prettify_xml(root), language='xml')
 
                 st.download_button(
