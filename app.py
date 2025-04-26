@@ -1,6 +1,7 @@
 import streamlit as st
 import xml.etree.ElementTree as ET
 import io
+from lxml import etree
 
 # ---- Helper Functions ----
 def parse_xml(xml_string):
@@ -114,18 +115,35 @@ if uploaded_file:
                 st.write(f"- {issue}")
 
             suggestions = suggest_fixes(root)
-            if st.button("Apply Copilot Suggestions"):
-                root = apply_suggestions(root, suggestions)
-                st.success("Suggestions Applied!")
+           if st.button("Apply Copilot Suggestions"):
+    root = apply_suggestions(root, suggestions)
+    st.success("Suggestions Applied!")
 
-                st.subheader("Repaired Message")
-                st.code(prettify_xml(root), language='xml')
+    # --- New XML building and Display code ---
 
-                st.download_button(
-                    label="Download Repaired XML",
-                    data=prettify_xml(root),
-                    file_name="repaired_payment.xml",
-                    mime="application/xml"
-                )
-        else:
-            st.success("No issues found. Payment is clean!")
+    # Step 1: Convert repaired root to a string
+    fixed_xml_string = prettify_xml(root)
+
+    # Step 2: Extract AppHdr and Document separately
+    start_apphdr = fixed_xml_string.find("<AppHdr")
+    end_apphdr = fixed_xml_string.find("</AppHdr>") + len("</AppHdr>")
+    apphdr_xml = fixed_xml_string[start_apphdr:end_apphdr]
+
+    start_doc = fixed_xml_string.find("<Document")
+    end_doc = fixed_xml_string.find("</Document>") + len("</Document>")
+    document_xml = fixed_xml_string[start_doc:end_doc]
+
+    # Step 3: Build final Swift-compliant Envelope
+    final_xml = build_final_envelope(apphdr_xml, document_xml)
+
+    # Step 4: Show final Swift CBPR+ XML
+    st.subheader("Repaired Swift CBPR+ Message")
+    st.code(final_xml, language='xml')
+
+    # Step 5: Allow Download
+    st.download_button(
+        label="Download Repaired Swift XML",
+        data=final_xml,
+        file_name="repaired_payment.xml",
+        mime="application/xml"
+    )
