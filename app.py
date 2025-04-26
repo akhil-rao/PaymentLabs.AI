@@ -3,39 +3,28 @@ import xml.etree.ElementTree as ET
 import io
 from lxml import etree
 
+# --- Helper Functions ---
+
 def build_final_envelope(apphdr_xml, document_xml):
     NSMAP = {
         'env': 'urn:swift:xsd:envelope',
         'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
     }
-    
     envelope = etree.Element("{urn:swift:xsd:envelope}Envelope", nsmap=NSMAP)
-
-    # Parse AppHdr
     apphdr = etree.fromstring(apphdr_xml)
     apphdr.attrib['xmlns'] = 'urn:iso:std:iso:20022:tech:xsd:head.001.001.02'
-
-    # Parse Document
     document = etree.fromstring(document_xml)
     document.attrib['xmlns'] = 'urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08'
-
-    # Attach them inside Envelope
     envelope.append(apphdr)
     envelope.append(document)
-
     return etree.tostring(envelope, pretty_print=True, encoding='unicode')
 
-# ---- Helper Functions ----
 def parse_xml(xml_string):
     try:
-        # Parse the XML
         root = ET.fromstring(xml_string)
-        
-        # Check and clean namespaces if they exist
         for elem in root.iter():
             if elem.tag.startswith('{'):
-                elem.tag = elem.tag.split('}', 1)[1]  # Remove namespace part
-        
+                elem.tag = elem.tag.split('}', 1)[1]
         return root
     except ET.ParseError:
         return None
@@ -48,15 +37,37 @@ def find_missing_fields(root):
         issues.append("Missing Payment Purpose Code (Purp)")
     return issues
 
+def suggest_fixes(root, user_choices):
+    suggestions = {}
+    address_choice = user_choices.get('address_type', 'Structured')
+    if address_choice == "Structured":
+        suggestions['StructuredAddress'] = {
+            'StrtNm': 'Main Street',
+            'BldgNb': '123',
+            'PstCd': '12345',
+            'TwnNm': 'Sampletown',
+            'Ctry': 'US'
+        }
+    elif address_choice == "Hybrid":
+        suggestions['HybridAddress'] = {
+            'AdrLine1': '123 Main Street',
+            'AdrLine2': 'Sampletown 12345'
+        }
+    if user_choices.get('fix_lei', False):
+        suggestions['LEI'] = '5493001KJTIIGC8Y1R12'
+    if user_choices.get('fix_purpose', False):
+        suggestions['PurposeCode'] = 'GDDS'
+    if user_choices.get('fix_remittance', False):
+        suggestions['RemittanceReference'] = 'RF712345678901234567'
+    return suggestions
+
 def apply_suggestions(root, suggestions):
-    # Apply Structured or Hybrid Address cleanly
     dbtr = root.find(".//Dbtr")
     if dbtr is not None:
         pstlAdr = dbtr.find("PstlAdr")
         if pstlAdr is None:
             pstlAdr = ET.SubElement(dbtr, "PstlAdr")
         else:
-            # Clear existing address fields
             pstlAdr.clear()
 
         if 'StructuredAddress' in suggestions:
@@ -68,7 +79,6 @@ def apply_suggestions(root, suggestions):
                 adrLine = ET.SubElement(pstlAdr, "AdrLine")
                 adrLine.text = value
 
-    # Apply LEI cleanly
     if 'LEI' in suggestions:
         id_elem = dbtr.find("Id")
         if id_elem is None:
@@ -81,7 +91,6 @@ def apply_suggestions(root, suggestions):
             lei = ET.SubElement(org_id, "LEI")
         lei.text = suggestions['LEI']
 
-    # Apply Purpose Code
     if 'PurposeCode' in suggestions:
         cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
         if cdt_trf_tx_inf is not None:
@@ -96,7 +105,6 @@ def apply_suggestions(root, suggestions):
                 cd = ET.SubElement(purp, "Cd")
             cd.text = suggestions['PurposeCode']
 
-    # Apply Remittance Reference
     if 'RemittanceReference' in suggestions:
         cdt_trf_tx_inf = root.find(".//CdtTrfTxInf")
         if cdt_trf_tx_inf is not None:
@@ -121,6 +129,7 @@ def prettify_xml(elem):
     return rough_string.decode('utf-8')
 
 # ---- Streamlit App ----
+
 st.set_page_config(page_title="Smart Payment Repair Copilot", layout="wide")
 st.title("Smart Payment Repair Copilot")
 
@@ -158,59 +167,47 @@ if uploaded_file:
             st.warning("Issues Found:")
             for issue in issues:
                 st.write(f"- {issue}")
-                # 🧩 Copilot Repair Options Section
-st.subheader("Copilot Repair Options")
 
-# Address type choice
-address_type = st.radio(
-    "Choose Address Type:",
-    ("Structured", "Hybrid"),
-    index=0
-)
+            # 🧩 Copilot Repair Options Section inside issues block
+            st.subheader("Copilot Repair Options")
 
-# Checkboxes for optional fixes
-fix_lei = st.checkbox("Fix Missing LEI")
-fix_purpose = st.checkbox("Fix Missing Purpose Code")
-fix_remittance = st.checkbox("Fix Missing Remittance Information")
+            address_type = st.radio("Choose Address Type:", ("Structured", "Hybrid"), index=0)
+            fix_lei = st.checkbox("Fix Missing LEI")
+            fix_purpose = st.checkbox("Fix Missing Purpose Code")
+            fix_remittance = st.checkbox("Fix Missing Remittance Information")
 
-# Collect user choices into a dictionary
-user_choices = {
-    'address_type': address_type,
-    'fix_lei': fix_lei,
-    'fix_purpose': fix_purpose,
-    'fix_remittance': fix_remittance
-}
+            user_choices = {
+                'address_type': address_type,
+                'fix_lei': fix_lei,
+                'fix_purpose': fix_purpose,
+                'fix_remittance': fix_remittance
+            }
 
-if st.button("Apply Copilot Suggestions"):
-    suggestions = suggest_fixes(root, user_choices)  # Call suggest_fixes properly
-    root = apply_suggestions(root, suggestions)
-    st.success("Suggestions Applied!")
+            if st.button("Apply Copilot Suggestions"):
+                suggestions = suggest_fixes(root, user_choices)
+                root = apply_suggestions(root, suggestions)
+                st.success("Suggestions Applied!")
 
-    # --- New XML building and Display code ---
+                fixed_xml_string = prettify_xml(root)
 
-    # Step 1: Convert repaired root to a string
-    fixed_xml_string = prettify_xml(root)
+                start_apphdr = fixed_xml_string.find("<AppHdr")
+                end_apphdr = fixed_xml_string.find("</AppHdr>") + len("</AppHdr>")
+                apphdr_xml = fixed_xml_string[start_apphdr:end_apphdr]
 
-    # Step 2: Extract AppHdr and Document separately
-    start_apphdr = fixed_xml_string.find("<AppHdr")
-    end_apphdr = fixed_xml_string.find("</AppHdr>") + len("</AppHdr>")
-    apphdr_xml = fixed_xml_string[start_apphdr:end_apphdr]
+                start_doc = fixed_xml_string.find("<Document")
+                end_doc = fixed_xml_string.find("</Document>") + len("</Document>")
+                document_xml = fixed_xml_string[start_doc:end_doc]
 
-    start_doc = fixed_xml_string.find("<Document")
-    end_doc = fixed_xml_string.find("</Document>") + len("</Document>")
-    document_xml = fixed_xml_string[start_doc:end_doc]
+                final_xml = build_final_envelope(apphdr_xml, document_xml)
 
-    # Step 3: Build final Swift-compliant Envelope
-    final_xml = build_final_envelope(apphdr_xml, document_xml)
+                st.subheader("Repaired Swift CBPR+ Message")
+                st.code(final_xml, language='xml')
 
-    # Step 4: Show final Swift CBPR+ XML
-    st.subheader("Repaired Swift CBPR+ Message")
-    st.code(final_xml, language='xml')
-
-    # Step 5: Allow Download
-    st.download_button(
-        label="Download Repaired Swift XML",
-        data=final_xml,
-        file_name="repaired_payment.xml",
-        mime="application/xml"
-    )
+                st.download_button(
+                    label="Download Repaired Swift XML",
+                    data=final_xml,
+                    file_name="repaired_payment.xml",
+                    mime="application/xml"
+                )
+        else:
+            st.success("No issues found. Payment is clean!")
