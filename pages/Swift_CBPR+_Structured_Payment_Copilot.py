@@ -244,28 +244,52 @@ if uploaded_file:
 
                 final_xml = build_final_envelope(apphdr_xml, document_xml)
 
-                st.subheader("📝 Before vs ✨ After Comparison")
+               st.subheader("📝 Before vs ✨ After Comparison")
 
-                col1, col2 = st.columns(2)
+col1, col2 = st.columns(2)
 
-                with col1:
-                    st.markdown("### 📝 Original Message")
-                    st.code(prettify_xml(original_root), language='xml')
+# --- Column 1: Original Message ---
+with col1:
+    st.markdown("### 📝 Original Message")
+    st.markdown(
+        f"""
+        <div style='background-color:#f0f2f6; padding:10px; border-radius:10px; font-family:monospace; overflow-wrap: break-word; word-wrap: break-word; font-size: 14px'>
+        {prettify_xml(original_root).replace('<', '&lt;').replace('>', '&gt;')}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-                with col2:
-                    st.markdown("### ✨ Repaired Message")
-                    st.code(final_xml, language='xml')
+# --- Column 2: Repaired Message ---
+with col2:
+    st.markdown("### ✨ Repaired Message")
+    st.markdown(
+        f"""
+        <div style='background-color:#e0f7fa; padding:10px; border-radius:10px; font-family:monospace; overflow-wrap: break-word; word-wrap: break-word; font-size: 14px'>
+        {final_xml.replace('<', '&lt;').replace('>', '&gt;')}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-                st.subheader("⬇️ Download Repaired Swift CBPR+ XML")
-                st.download_button(
-                    label="Download Repaired XML",
-                    data=final_xml,
-                    file_name="repaired_payment.xml",
-                    mime="application/xml"
-                )
-        else:
-            st.success("✅ No issues found. Payment is clean!")
-            st.code(prettify_xml(root), language='xml')
+# --- New: Change Summary ---
+st.subheader("🛠️ Fields Updated by Copilot")
+
+changes_made = []
+
+if user_choices.get('fix_lei', False):
+    changes_made.append("• Debtor LEI added or updated")
+if user_choices.get('fix_purpose', False):
+    changes_made.append("• Purpose Code (Purp) added or updated")
+if user_choices.get('fix_remittance', False):
+    changes_made.append("• Remittance Information (RmtInf) added or updated")
+if address_type:
+    changes_made.append(f"• Address structured as **{address_type} Address**")
+
+if changes_made:
+    st.success("\n".join(changes_made))
+else:
+    st.info("No structural changes were required.")
 
 # ---- Custom Footer ----
 
