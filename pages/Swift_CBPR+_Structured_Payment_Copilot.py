@@ -52,8 +52,8 @@ def prettify_xml(elem):
     return rough_string.decode('utf-8')
 
 # ---- Streamlit App ----
-st.set_page_config(page_title="Smart Payment Repair Copilot", layout="wide")
-st.title("Smart Payment Repair Copilot")
+st.set_page_config(page_title="Swift CBPR+ Structured Payment Copilot", layout="wide")
+st.title("🚀 Swift CBPR+ Structured Payment Copilot")
 
 uploaded_file = st.file_uploader("Upload Payment XML", type=["xml"])
 example_xml = """
