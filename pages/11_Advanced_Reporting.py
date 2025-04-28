@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import random
 import io
 
 # ---- Streamlit Page Setup ----
@@ -8,17 +9,22 @@ st.set_page_config(page_title="Advanced Reporting (NLP-Based)", layout="wide")
 st.title("📊 Advanced Reporting (NLP-Based)")
 
 # ---- Dummy Swift CBPR+ Data ----
+random.seed(42)  # for consistency
+currencies = ['USD', 'EUR', 'GBP', 'SGD']
+purposes = ['SALA', 'SUPP', 'INTC']
+countries = ['CA', 'FR', 'IN', 'HK', 'MY', 'AE', 'DE', 'SG']
+
 data = {
-    "SettlementDate": pd.date_range(start="2025-04-01", periods=10, freq='D'),
-    "TxnRef": [f"TRX00{i}" for i in range(1, 11)],
-    "InstdAmt": [5000, 15000, 7500, 9800, 12300, 6700, 8500, 5400, 10900, 15000],
-    "Ccy": ["USD", "EUR", "GBP", "USD", "SGD", "EUR", "GBP", "USD", "SGD", "EUR"],
-    "DbtrNm": ["John Doe", "Jane Corp", "Alice Ltd", "Bob LLC", "ZenCorp", "Prime Bank", "Mary Jane", "QuickPay", "EasyCorp", "TrustCo"],
-    "DbtrAcct": ["US123", "DE789", "GB321", "US456", "SG123", "FR654", "GB123", "US987", "SG789", "FR321"],
-    "CdtrNm": ["ABC Ltd", "XYZ Inc", "FinTech Co", "TradeHub", "TravelEx", "Axis Corp", "Shipping Ltd", "EuroBank", "FinServe", "PaymentsHub"],
-    "CdtrAcct": ["CA456", "FR321", "IN654", "HK987", "MY789", "AE321", "SG321", "DE654", "IN123", "AE987"],
-    "CdtrCountry": ["CA", "FR", "IN", "HK", "MY", "AE", "SG", "DE", "IN", "AE"],
-    "PurposeCode": ["SALA", "SUPP", "INTC", "SALA", "SUPP", "INTC", "SALA", "SUPP", "INTC", "SALA"]
+    "SettlementDate": pd.date_range(start="2025-04-01", periods=50, freq='D'),
+    "TxnRef": [f"TRX{str(i).zfill(3)}" for i in range(1, 51)],
+    "InstdAmt": [random.randint(4000, 20000) for _ in range(50)],
+    "Ccy": [random.choice(currencies) for _ in range(50)],
+    "DbtrNm": [f"Debtor {i}" for i in range(1, 51)],
+    "DbtrAcct": [f"DBTRACCT{i}" for i in range(1, 51)],
+    "CdtrNm": [f"Creditor {i}" for i in range(1, 51)],
+    "CdtrAcct": [f"CDTRACCT{i}" for i in range(1, 51)],
+    "CdtrCountry": [random.choice(countries) for _ in range(50)],
+    "PurposeCode": [random.choice(purposes) for _ in range(50)]
 }
 
 df = pd.DataFrame(data)
@@ -42,8 +48,8 @@ def parse_nlp_query(query, df):
     query = query.lower()
     filtered_df = df.copy()
 
-    # Filter by Country
-    countries = {
+    # Country matching
+    countries_map = {
         "canada": "CA",
         "france": "FR",
         "india": "IN",
@@ -53,13 +59,13 @@ def parse_nlp_query(query, df):
         "germany": "DE",
         "singapore": "SG"
     }
-    for name, code in countries.items():
+    for name, code in countries_map.items():
         if name in query:
             filtered_df = filtered_df[filtered_df["CdtrCountry"] == code]
             break
 
-    # Filter by Purpose
-    purposes = {
+    # Purpose matching
+    purposes_map = {
         "salaries": "SALA",
         "salary": "SALA",
         "supplier": "SUPP",
@@ -67,12 +73,12 @@ def parse_nlp_query(query, df):
         "internal": "INTC",
         "intercompany": "INTC"
     }
-    for keyword, purpose_code in purposes.items():
+    for keyword, purpose_code in purposes_map.items():
         if keyword in query:
             filtered_df = filtered_df[filtered_df["PurposeCode"] == purpose_code]
             break
 
-    # Detect type of report
+    # Report type
     if "amount" in query or "volume" in query:
         report_type = "amount"
     elif "count" in query or "number of payments" in query:
@@ -117,4 +123,3 @@ if st.button("🚀 Generate Report"):
                     file_name="generated_report.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
-
