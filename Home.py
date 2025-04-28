@@ -55,9 +55,9 @@ Welcome to <b>Transact-AI Sandbox</b> — a next-generation workspace where <b>A
 
 st.markdown('<div class="custom-text"><h3>🧩 Available Modules:</h3></div>', unsafe_allow_html=True)
 
-st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Now LIVE! Repair and enrich Swift CBPR+ payment messages with AI assistance.")
-st.success("🔷 **Structured Address Validation** — Now LIVE! Validate and structure postal addresses using Nucleus API.")
-st.success("🔷 **Advanced Reporting (NLP-Based)** — Now LIVE! Generate smart cross-border payment reports from natural language input.")
+st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Repair and enrich Swift CBPR+ payment messages with AI assistance.")
+st.success("🔷 **Structured Address Validation** — Validate and structure postal addresses using Nucleus API.")
+st.success("🔷 **Advanced Reporting (NLP-Based)** — Generate smart cross-border payment reports from natural language input.")
 
 st.markdown('---', unsafe_allow_html=True)
 
