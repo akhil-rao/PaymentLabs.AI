@@ -25,35 +25,42 @@ user_input = st.text_area(
     height=200
 )
 
+# ---- On Button Click ----
 if st.button("🚀 Structure Address"):
     if user_input.strip() == "":
-        st.warning("Please paste a valid unstructured address XML.")
+        st.warning("⚠️ Please paste a valid unstructured address XML.")
     else:
         st.subheader("🔄 Sending to Nucleus API...")
 
         api_url = "https://recorder-new.nucleus.wavelabs.in/structured-address/parseXml"
+
+        # Prepare file upload
         files = {'file': ('address.xml', user_input, 'application/xml')}
 
-        response = requests.post(api_url, files=files)
+        try:
+            response = requests.post(api_url, files=files)
 
-        if response.status_code == 200:
-            structured_address = response.json()
+            if response.status_code == 200:
+                structured_address = response.json()
 
-            st.success("✅ Structured Address Received Successfully!")
+                st.success("✅ Structured Address Received Successfully!")
 
-            st.markdown("### 🏛️ Structured Address Output")
-            st.json(structured_address)
+                st.markdown("### 🏛️ Structured Address Output")
+                st.json(structured_address)
 
-            st.markdown(
-                """
-                <div style="background-color:#e0f7fa;padding:15px;border-radius:10px; margin-top:20px;">
-                ✅ <b>Zero Data Loss:</b> No parts of your input address are lost.<br><br>
-                ❌ <b>No Enhancement:</b> Only fields present in your pasted data are structured. Nothing new is artificially added.<br><br>
-                🚀 <b>Pure Structuring:</b> Exact transformation into Swift CBPR+ compliant address format.
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+                st.markdown(
+                    """
+                    <div style="background-color:#e0f7fa;padding:15px;border-radius:10px; margin-top:20px;">
+                    ✅ <b>Zero Data Loss:</b> No parts of your input address are lost.<br><br>
+                    ❌ <b>No Enhancement:</b> Only fields present in your pasted data are structured.<br><br>
+                    🚀 <b>Pure Structuring:</b> Exact transformation into Swift CBPR+ compliant address format.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            else:
+                st.error(f"❌ Error calling Nucleus API: Status Code {response.status_code}")
+                st.text(f"Server Response: {response.text}")
 
-        else:
-            st.error(f"❌ Error calling Nucleus API: {response.status_code}")
+        except Exception as e:
+            st.error(f"❌ An unexpected error occurred: {e}")
