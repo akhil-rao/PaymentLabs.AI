@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import io  # <-- important for simulating file object
 
 # ---- Streamlit Page Setup ----
 st.set_page_config(page_title="Structured Address Validation", layout="wide")
@@ -19,15 +20,17 @@ example_xml = """<PstlAdr>
   <AdrLine>06-03 SINGAPORE 188024 SG</AdrLine>
 </PstlAdr>"""
 
-if st.button("Load Example"):
-    uploaded_file = io.StringIO(example_xml)
+load_example = st.button("Load Example XML")
+
+if load_example:
+    uploaded_file = io.StringIO(example_xml)  # <--- create a file-like object
 
 # ---- Process ----
 if uploaded_file:
-    if isinstance(uploaded_file, str):
-        xml_content = uploaded_file
-    else:
+    if hasattr(uploaded_file, 'read'):
         xml_content = uploaded_file.read()
+    else:
+        xml_content = uploaded_file
 
     st.subheader("📝 Original Unstructured Address (AdrLine Format)")
     st.code(xml_content, language='xml')
