@@ -57,6 +57,7 @@ st.markdown('<div class="custom-text"><h3>🧩 Available Modules:</h3></div>', u
 
 st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Now LIVE! Repair and enrich Swift CBPR+ payment messages with AI assistance.")
 st.success("🔷 **Structured Address Validation** — Now LIVE! Validate and structure postal addresses using Nucleus API.")
+st.success("🔷 **Advanced Reporting (NLP-Based)** — Now LIVE! Generate smart cross-border payment reports from natural language input.")
 
 st.markdown('---', unsafe_allow_html=True)
 
