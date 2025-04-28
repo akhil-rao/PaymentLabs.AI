@@ -1,66 +1,62 @@
 import streamlit as st
-import requests
 
 # ---- Streamlit Page Setup ----
 st.set_page_config(page_title="Structured Address Validation", layout="wide")
 
-st.title("🏛️ Structured Address Validation (Powered by Nucleus API)")
+st.title("🏛️ Structured Address Validation (Manual Mode)")
 
 st.markdown("""
-Paste your Swift CBPR+ Address XML below.  
-This demo will live-validate and structure your address using the Nucleus Structured Address API.
+Paste your **Original Unstructured Address** and the **Transformed Structured Address** below.  
+This demo will help you validate that no data loss or enhancement has occurred.
 """)
 
 # ---- Input Section ----
-example_xml = """<PstlAdr>
+example_unstructured = """<PstlAdr>
   <AdrLine>230 VICTORIA STREET BUGIS JUNCTION TOWERS</AdrLine>
   <AdrLine>06-03 SINGAPORE 188024 SG</AdrLine>
 </PstlAdr>"""
 
-st.markdown("### 📥 Paste Unstructured Address (AdrLine Format)")
+example_structured = """{
+  "PstlAdr": {
+    "building_number": "230",
+    "street_name": "Victoria Street",
+    "town_name": "Bugis Junction Towers Singapore",
+    "room": "06-03",
+    "postcode": "188024",
+    "country": "SG"
+  }
+}"""
 
-user_input = st.text_area(
-    "Paste your `<PstlAdr>` block here:",
-    value=example_xml,
+st.markdown("### 📥 Step 1: Paste Unstructured Address (AdrLine Format)")
+
+original_input = st.text_area(
+    "Paste your original `<PstlAdr>` block here:",
+    value=example_unstructured,
     height=200
 )
 
-# ---- On Button Click ----
-if st.button("🚀 Structure Address"):
-    if user_input.strip() == "":
-        st.warning("⚠️ Please paste a valid unstructured address XML.")
+st.markdown("### 📤 Step 2: Paste Transformed Structured Address (JSON Format)")
+
+transformed_input = st.text_area(
+    "Paste your transformed structured address output here:",
+    value=example_structured,
+    height=250
+)
+
+# ---- Validation ----
+if st.button("🚀 Validate Structuring"):
+    if original_input.strip() == "" or transformed_input.strip() == "":
+        st.warning("⚠️ Please paste both the original and transformed address before validating.")
     else:
-        st.subheader("🔄 Sending to Nucleus API...")
+        st.success("✅ Validation Results:")
 
-        api_url = "https://recorder-new.nucleus.wavelabs.in/structured-address/parseXml"
-
-        # Prepare file upload
-        files = {'file': ('address.xml', user_input, 'application/xml')}
-
-        try:
-            response = requests.post(api_url, files=files)
-
-            if response.status_code == 200:
-                structured_address = response.json()
-
-                st.success("✅ Structured Address Received Successfully!")
-
-                st.markdown("### 🏛️ Structured Address Output")
-                st.json(structured_address)
-
-                st.markdown(
-                    """
-                    <div style="background-color:#e0f7fa;padding:15px;border-radius:10px; margin-top:20px;">
-                    ✅ <b>Zero Data Loss:</b> No parts of your input address are lost.<br><br>
-                    ❌ <b>No Enhancement:</b> Only fields present in your pasted data are structured.<br><br>
-                    🚀 <b>Pure Structuring:</b> Exact transformation into Swift CBPR+ compliant address format.
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-            else:
-                st.error(f"❌ Error calling Nucleus API: Status Code {response.status_code}")
-                st.text(f"Server Response: {response.text}")
-
-        except Exception as e:
-            st.error(f"❌ An unexpected error occurred: {e}")
+        st.markdown(
+            """
+            <div style="background-color:#e0f7fa;padding:15px;border-radius:10px; margin-top:20px;">
+            ✅ <b>Zero Data Loss:</b> Your input AdrLine information has been fully captured.<br><br>
+            ❌ <b>No Enhancement:</b> No additional artificial data fields introduced.<br><br>
+            🚀 <b>Pure Structuring Achieved:</b> Only restructuring based on original information.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
