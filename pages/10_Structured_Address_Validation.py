@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import io  # <-- important for simulating file object
 
 # ---- Streamlit Page Setup ----
 st.set_page_config(page_title="Structured Address Validation", layout="wide")
@@ -8,57 +7,53 @@ st.set_page_config(page_title="Structured Address Validation", layout="wide")
 st.title("🏛️ Structured Address Validation (Powered by Nucleus API)")
 
 st.markdown("""
-Upload or paste a Swift CBPR+ XML address.  
-This demo will show live structured output from the Nucleus Address Parser.
+Paste your Swift CBPR+ Address XML below.  
+This demo will live-validate and structure your address using the Nucleus Structured Address API.
 """)
 
-# ---- Upload XML ----
-uploaded_file = st.file_uploader("Upload Address XML", type=["xml"])
-
+# ---- Input Section ----
 example_xml = """<PstlAdr>
   <AdrLine>230 VICTORIA STREET BUGIS JUNCTION TOWERS</AdrLine>
   <AdrLine>06-03 SINGAPORE 188024 SG</AdrLine>
 </PstlAdr>"""
 
-load_example = st.button("Load Example XML")
+st.markdown("### 📥 Paste Unstructured Address (AdrLine Format)")
 
-if load_example:
-    uploaded_file = io.StringIO(example_xml)  # <--- create a file-like object
+user_input = st.text_area(
+    "Paste your `<PstlAdr>` block here:",
+    value=example_xml,
+    height=200
+)
 
-# ---- Process ----
-if uploaded_file:
-    if hasattr(uploaded_file, 'read'):
-        xml_content = uploaded_file.read()
+if st.button("🚀 Structure Address"):
+    if user_input.strip() == "":
+        st.warning("Please paste a valid unstructured address XML.")
     else:
-        xml_content = uploaded_file
+        st.subheader("🔄 Sending to Nucleus API...")
 
-    st.subheader("📝 Original Unstructured Address (AdrLine Format)")
-    st.code(xml_content, language='xml')
+        api_url = "https://recorder-new.nucleus.wavelabs.in/structured-address/parseXml"
+        files = {'file': ('address.xml', user_input, 'application/xml')}
 
-    # ---- Call Nucleus API ----
-    st.subheader("🔄 Calling Nucleus Structured Address API...")
+        response = requests.post(api_url, files=files)
 
-    api_url = "https://recorder-new.nucleus.wavelabs.in/structured-address/parseXml"
+        if response.status_code == 200:
+            structured_address = response.json()
 
-    files = {'file': ('address.xml', xml_content, 'application/xml')}
+            st.success("✅ Structured Address Received Successfully!")
 
-    response = requests.post(api_url, files=files)
+            st.markdown("### 🏛️ Structured Address Output")
+            st.json(structured_address)
 
-    if response.status_code == 200:
-        structured_address = response.json()
-        st.success("✅ Structured Address Received Successfully!")
+            st.markdown(
+                """
+                <div style="background-color:#e0f7fa;padding:15px;border-radius:10px; margin-top:20px;">
+                ✅ <b>Zero Data Loss:</b> No parts of your input address are lost.<br><br>
+                ❌ <b>No Enhancement:</b> Only fields present in your pasted data are structured. Nothing new is artificially added.<br><br>
+                🚀 <b>Pure Structuring:</b> Exact transformation into Swift CBPR+ compliant address format.
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        st.subheader("🏛️ Structured Address Output")
-        st.json(structured_address)
-
-        st.markdown(
-            """
-            <div style="background-color:#e0f7fa;padding:10px;border-radius:10px;">
-            ✅ <b>Zero Data Loss:</b> No parts of input address lost.<br>
-            ❌ <b>No Enhancement:</b> Only structuring applied based on given data.<br>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    else:
-        st.error(f"❌ Error calling Nucleus API: {response.status_code}")
+        else:
+            st.error(f"❌ Error calling Nucleus API: {response.status_code}")
