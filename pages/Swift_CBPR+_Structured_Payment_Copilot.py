@@ -306,7 +306,7 @@ st.markdown(
     }
     </style>
     <div class="custom-footer">
-        🔹 Powered by Transact-AI Sandbox 🔹
+        🔹 Powered by PaymentLabs.AI Sandbox 🔹
     </div>
     """,
     unsafe_allow_html=True
