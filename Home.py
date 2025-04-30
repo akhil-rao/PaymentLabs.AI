@@ -1,13 +1,13 @@
 import streamlit as st
 
 # ---- Streamlit Page Setup (MUST BE FIRST!) ----
-st.set_page_config(page_title="Transact-AI Sandbox", layout="wide")
+st.set_page_config(page_title="PaymentLabs.AI Sandbox", layout="wide")
 
 # ---- Force Browser Tab Title (Change title after page config) ----
 st.markdown(
     """
     <script>
-    var newTitle = "Transact-AI Sandbox";
+    var newTitle = "PaymentLabs.AI Sandbox";
     document.title = newTitle;
     </script>
     """,
@@ -15,10 +15,10 @@ st.markdown(
 )
 
 # ---- Home Page Content ----
-st.title("🚀 Welcome to Transact-AI Sandbox")
+st.title("🚀 Welcome to PaymentLabs.AI Sandbox")
 
 st.markdown("""
-Welcome to **Transact-AI Sandbox** — a next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payment operations.
+Welcome to **PaymentLabs.AI Sandbox** — a next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payment operations.
 """)
 
 st.markdown("### 🧩 Available Modules:")
