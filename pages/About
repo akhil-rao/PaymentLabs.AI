@@ -1,16 +1,16 @@
 import streamlit as st
 
-st.set_page_config(page_title="About Transact-AI Sandbox", layout="wide")
-st.title("🔷 About Transact-AI Sandbox")
+st.set_page_config(page_title="About PaymentLabs.AI Sandbox", layout="wide")
+st.title("🔷 About PaymentLabs.AI Sandbox")
 
 st.markdown("""
-Welcome to **Transact-AI Sandbox** — a next-generation workspace where AI meets ISO 20022 structured data to power intelligent payment operations.
+Welcome to **PaymentLabs.AI Sandbox** — a next-generation workspace where AI meets ISO 20022 structured data to power intelligent payment operations.
 
 ---
 
 ### 🌟 Our Vision
 
-At Transact-AI, we believe that the future of cross-border payments, compliance, and treasury operations will be **AI-first** and **data-driven**.
+At PaymentLabs, we believe that the future of cross-border payments, compliance, and treasury operations will be **AI-first** and **data-driven**.
 
 **ISO 20022** structured data is a game-changer — but only if institutions can unlock its full potential across payment operations, compliance, risk, and reconciliation.
 
@@ -47,7 +47,7 @@ Our mission is to empower financial institutions with AI-powered assistants that
 
 ### 🔹 Powered by
 
-Transact-AI Sandbox  
+PaymentLabs.AI Sandbox  
 An innovation initiative blending **payments expertise**, **data science**, and **AI research**.
 
 ---
