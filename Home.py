@@ -15,10 +15,10 @@ st.markdown(
 )
 
 # ---- Home Page Content ----
-st.title("🚀 Welcome to PaymentLabs.AI Sandbox")
+st.title("PaymentLabs.AI Sandbox")
 
 st.markdown("""
-Welcome to **PaymentLabs.AI Sandbox** — a next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payment operations.
+A next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payments.
 """)
 
 st.markdown("### 🧩 Available Modules:")
