@@ -7,10 +7,8 @@ st.set_page_config(page_title="ISO 20022 Data Quality Checker", layout="wide")
 st.title("ISO 20022 Data Quality Checker")
 
 st.markdown("""
-This module simulates ISO 20022 `pacs.008` messages and checks the quality of structured data fields across 100 payment instructions.  
-Key features:
-- Red highlights for missing fields
-- Eyeball check with full message view
+This module is designed for **corporates** to assess and improve the quality of their ISO 20022 payment initiation data.  
+It helps drive **Straight-Through Processing (STP)**, reduce **payment friction**, and enable the use of **rich structured data** in `pacs.008` messages — all critical for ISO 20022 compliance and operational excellence.
 """)
 
 # --- Dummy Data Generator ---
