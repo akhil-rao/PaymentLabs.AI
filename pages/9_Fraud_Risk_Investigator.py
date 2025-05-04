@@ -2,74 +2,74 @@ import streamlit as st
 import pandas as pd
 import random
 
-# ---- Page Config ----
+# ---- Page Setup ----
 st.set_page_config(page_title="Fraud Risk Investigator", layout="wide")
-st.title("🛡️ Fraud Risk Investigator")
+st.title("🛡️ Fraud Risk Investigator (MVP)")
 
 st.markdown("""
-This module simulates fraud risk detection using ISO 20022 structured fields (BIC, LEI, country, purpose) and red flags based on FATF and FinCEN indicators.
+This module simulates fraud detection using enriched ISO 20022 fields.
+Each transaction is assessed against **FATF red flags**, **OpenSanctions**, and **Swift data quality** checks.
 """)
 
-# ---- Generate Dummy Data ----
-random.seed(42)
-countries = ['US', 'GB', 'DE', 'SG', 'IN', 'CN', 'AE', 'RU', 'IR', 'KP', 'SY']
-purpose_codes = ['SALA', 'SUPP', 'TAXS', 'GDSV', 'INVS', 'DIVD', 'GIFT', 'CHAR']
-currencies = ['USD', 'EUR', 'GBP', 'SGD', 'INR', 'CNY', 'AED']
-bics = ['BOFAUS3N', 'DEUTDEFF', 'HSBCGB2L', 'DBSSSGSG', 'ICICINBB', 'NBADAEAAXXX']
-leis = ['5493001KJTIIGC8Y1R12', '213800D1EI4B9WTWWD28', '529900T8BM49AURSDO55', '7245009RSUFTN6UBGF94']
-risky_keywords = ['crypto', 'weapons', 'offshore', 'shell']
-
-data = []
-for i in range(100):
-    country = random.choice(countries)
-    purpose = random.choice(purpose_codes)
-    currency = random.choice(currencies)
-    amount = round(random.uniform(1000, 100000), 2)
-    remittance = random.choice([
-        'Invoice Payment', 'Salary Payment', 'Consulting Fee', 'Loan Repayment',
-        'Gift', 'Donation', 'crypto investment', 'weapons deal',
-        'offshore transfer', 'shell company funding'
-    ])
-    bic = random.choice(bics)
-    lei = random.choice(leis)
-    risk = 'High' if country in ['IR', 'KP', 'SY', 'RU'] or any(k in remittance.lower() for k in risky_keywords) else 'Low'
-
-    data.append({
-        'TransactionID': f'TXN{i+1:03d}',
-        'DebtorBIC': bic,
-        'DebtorLEI': lei,
-        'Country': country,
-        'Currency': currency,
-        'Amount': amount,
-        'PurposeCode': purpose,
-        'RemittanceInfo': remittance,
-        'RiskFlag': risk
-    })
+# ---- Dummy Data ----
+data = [
+    {
+        "Transaction ID": f"TXN{1000+i}",
+        "Amount": round(random.uniform(5000, 500000), 2),
+        "Currency": "USD",
+        "Debtor": random.choice(["ACME Corp", "Global Exports", "Unknown Entity", "Midland Ltd"]),
+        "Creditor": random.choice(["SafeBank", "XYZ Bank", "Iran Financial Org", "ABC Corp"]),
+        "Country": random.choice(["IR", "US", "RU", "SG", "IN", "CN"]),
+        "Purpose Code": random.choice(["SALA", "GDSV", "INTE", "CASH", "TAXS"]),
+        "LEI": random.choice(["", "5493001KJTIIGC8Y1R12"]),
+        "Sanction Match": random.choice([True, False, False]),
+    }
+    for i in range(50)
+]
 
 df = pd.DataFrame(data)
 
-# ---- Sidebar Filters ----
-st.sidebar.header("🔍 Filter")
-selected_purpose = st.sidebar.multiselect("Purpose Code", options=purpose_codes)
-selected_country = st.sidebar.multiselect("Country", options=countries)
-risk_filter = st.sidebar.selectbox("Risk Level", options=["All", "High", "Low"])
+# ---- Forensic Summary Builder ----
+def get_summary(row):
+    reasons = []
+    sources = []
+    
+    if row["Country"] in ["IR", "RU", "CN"]:
+        reasons.append("Country is on FATF grey/black list")
+        sources.append("FATF")
 
-filtered_df = df.copy()
-if selected_purpose:
-    filtered_df = filtered_df[filtered_df['PurposeCode'].isin(selected_purpose)]
-if selected_country:
-    filtered_df = filtered_df[filtered_df['Country'].isin(selected_country)]
-if risk_filter != "All":
-    filtered_df = filtered_df[filtered_df['RiskFlag'] == risk_filter]
+    if row["Purpose Code"] == "CASH":
+        reasons.append("Unusual purpose code (CASH) for cross-border payment")
+        sources.append("Swift Guidelines")
 
-# ---- Show Table ----
-st.markdown("### 📋 Filtered Transactions")
-st.dataframe(filtered_df, use_container_width=True)
+    if not row["LEI"]:
+        reasons.append("Missing LEI for corporate sender")
+        sources.append("Swift Data Quality")
 
-# ---- Download CSV ----
-st.download_button(
-    "📥 Download Filtered Data (CSV)",
-    data=filtered_df.to_csv(index=False).encode('utf-8'),
-    file_name="fraud_risk_results.csv",
-    mime="text/csv"
-)
+    if row["Sanction Match"] and "Iran" in row["Creditor"]:
+        reasons.append("Creditor flagged in OpenSanctions")
+        sources.append("OpenSanctions")
+
+    if row["Amount"] > 250000:
+        reasons.append("High-value transaction requiring additional scrutiny")
+        sources.append("FATF")
+
+    if not reasons:
+        return "✅ No fraud indicators detected"
+    
+    return f"❌ Flagged for: {', '.join(reasons)}\n\n📚 Sources: {', '.join(set(sources))}"
+
+df["Risk Summary"] = df.apply(get_summary, axis=1)
+
+# ---- Display Loop ----
+for idx, row in df.iterrows():
+    st.markdown(f"### 🔍 Transaction ID: {row['Transaction ID']}")
+    st.markdown(f"💸 Amount: **{row['Amount']} {row['Currency']}**")
+    st.markdown(f"👤 Debtor: **{row['Debtor']}**")
+    st.markdown(f"🏦 Creditor: **{row['Creditor']}**")
+    st.markdown(f"🌍 Country: **{row['Country']}**")
+    st.markdown(f"📄 Purpose Code: **{row['Purpose Code']}**")
+    st.markdown(f"🔗 LEI: **{row['LEI'] or 'Missing'}**")
+    st.markdown(f"🚨 Sanction Match: **{'Yes' if row['Sanction Match'] else 'No'}**")
+    st.info(row['Risk Summary'])
+    st.markdown("---")
