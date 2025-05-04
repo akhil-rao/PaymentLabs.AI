@@ -47,6 +47,7 @@ st.markdown("### 🧩 Available Modules:")
 st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Now LIVE! Repair and enrich Swift CBPR+ payment messages with AI assistance.")
 st.success("🔷 **Structured Address Validation** — Now LIVE! Validate and structure postal addresses with zero data loss.")
 st.success("🔷 **Advanced Reporting (NLP-Based)** — Now LIVE! Generate smart cross-border payment reports from natural language input.")
+st.success("🔷 **Fraud Risk Investigator** — Now LIVE! Simulate fraud detection using structured ISO 20022 fields and global rules.")
 
 st.markdown("---")
 st.markdown("### 🧪 Upcoming Smart Agents:")
@@ -58,8 +59,7 @@ st.markdown("""
 - 💧 **Liquidity Management Copilot** *(Coming Soon)*  
 - 📋 **Compliance Reporter Agent** *(Coming Soon)*  
 - 🧹 **Payment Data Quality Checker** *(Coming Soon)*  
-- 🌍 **Cross-Border Cost Predictor** *(Coming Soon)*  
-- 🛡️ **Fraud Risk Investigator** *(Coming Soon)*
+- 🌍 **Cross-Border Cost Predictor** *(Coming Soon)*
 """)
 
 st.markdown("---")
