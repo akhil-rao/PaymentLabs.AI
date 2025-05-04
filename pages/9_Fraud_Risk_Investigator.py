@@ -7,12 +7,11 @@ st.set_page_config(page_title="Fraud Risk Investigator", layout="wide")
 st.title("🛡️ Fraud Risk Investigator")
 
 st.markdown("""
-This module simulates fraud risk detection using ISO 20022 structured fields (BIC, LEI, country, purpose) and known red flags from FATF, FinCEN, and OpenSanctions guidelines.
+This module simulates fraud risk detection using ISO 20022 structured fields (BIC, LEI, country, purpose) and red flags based on FATF and FinCEN indicators.
 """)
 
 # ---- Generate Dummy Data ----
 random.seed(42)
-
 countries = ['US', 'GB', 'DE', 'SG', 'IN', 'CN', 'AE', 'RU', 'IR', 'KP', 'SY']
 purpose_codes = ['SALA', 'SUPP', 'TAXS', 'GDSV', 'INVS', 'DIVD', 'GIFT', 'CHAR']
 currencies = ['USD', 'EUR', 'GBP', 'SGD', 'INR', 'CNY', 'AED']
@@ -26,12 +25,15 @@ for i in range(100):
     purpose = random.choice(purpose_codes)
     currency = random.choice(currencies)
     amount = round(random.uniform(1000, 100000), 2)
-    remittance = random.choice(['Invoice Payment', 'Salary Payment', 'Consulting Fee', 'Loan Repayment', 'Gift', 'Donation', 'crypto investment', 'weapons deal', 'offshore transfer', 'shell company funding'])
+    remittance = random.choice([
+        'Invoice Payment', 'Salary Payment', 'Consulting Fee', 'Loan Repayment',
+        'Gift', 'Donation', 'crypto investment', 'weapons deal',
+        'offshore transfer', 'shell company funding'
+    ])
     bic = random.choice(bics)
     lei = random.choice(leis)
-    risk = 'Low'
-    if country in ['IR', 'KP', 'SY', 'RU'] or any(keyword in remittance.lower() for keyword in risky_keywords):
-        risk = 'High'
+    risk = 'High' if country in ['IR', 'KP', 'SY', 'RU'] or any(k in remittance.lower() for k in risky_keywords) else 'Low'
+
     data.append({
         'TransactionID': f'TXN{i+1:03d}',
         'DebtorBIC': bic,
@@ -60,14 +62,14 @@ if selected_country:
 if risk_filter != "All":
     filtered_df = filtered_df[filtered_df['RiskFlag'] == risk_filter]
 
-# ---- Display Table ----
-st.markdown("### 📋 Transaction Risk Summary")
+# ---- Show Table ----
+st.markdown("### 📋 Filtered Transactions")
 st.dataframe(filtered_df, use_container_width=True)
 
-# ---- Download Option ----
+# ---- Download CSV ----
 st.download_button(
-    label="📥 Download Filtered Results (CSV)",
+    "📥 Download Filtered Data (CSV)",
     data=filtered_df.to_csv(index=False).encode('utf-8'),
-    file_name="fraud_risk_investigation_results.csv",
+    file_name="fraud_risk_results.csv",
     mime="text/csv"
 )
