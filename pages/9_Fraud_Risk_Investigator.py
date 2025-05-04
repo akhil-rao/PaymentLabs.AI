@@ -33,7 +33,7 @@ df = pd.DataFrame(data)
 def get_summary(row):
     reasons = []
     sources = []
-    
+
     if row["Country"] in ["IR", "RU", "CN"]:
         reasons.append("Country is on FATF grey/black list")
         sources.append("FATF")
@@ -55,21 +55,29 @@ def get_summary(row):
         sources.append("FATF")
 
     if not reasons:
-        return "✅ No fraud indicators detected"
-    
-    return f"❌ Flagged for: {', '.join(reasons)}\n\n📚 Sources: {', '.join(set(sources))}"
+        return "✅ No fraud indicators detected", []
 
-df["Risk Summary"] = df.apply(get_summary, axis=1)
+    return f"❌ Flagged for: {', '.join(reasons)}", list(set(sources))
 
-# ---- Display Loop ----
-for idx, row in df.iterrows():
-    st.markdown(f"### 🔍 Transaction ID: {row['Transaction ID']}")
-    st.markdown(f"💸 Amount: **{row['Amount']} {row['Currency']}**")
-    st.markdown(f"👤 Debtor: **{row['Debtor']}**")
-    st.markdown(f"🏦 Creditor: **{row['Creditor']}**")
-    st.markdown(f"🌍 Country: **{row['Country']}**")
-    st.markdown(f"📄 Purpose Code: **{row['Purpose Code']}**")
-    st.markdown(f"🔗 LEI: **{row['LEI'] or 'Missing'}**")
-    st.markdown(f"🚨 Sanction Match: **{'Yes' if row['Sanction Match'] else 'No'}**")
-    st.info(row['Risk Summary'])
-    st.markdown("---")
+# ---- Generate Summary and Sources ----
+df["Risk Summary"], df["Sources"] = zip(*df.apply(get_summary, axis=1))
+
+# ---- Display Table with Click to Expand ----
+st.markdown("### 📋 Transactions Overview")
+st.dataframe(df[["Transaction ID", "Amount", "Currency", "Debtor", "Creditor", "Country", "Purpose Code", "LEI", "Sanction Match"]])
+
+selected_txn = st.selectbox("🔍 Select a Transaction to Investigate:", df["Transaction ID"].tolist())
+
+if selected_txn:
+    selected = df[df["Transaction ID"] == selected_txn].iloc[0]
+    st.markdown(f"#### 🔍 Transaction Details: {selected['Transaction ID']}")
+    st.markdown(f"💸 Amount: **{selected['Amount']} {selected['Currency']}**")
+    st.markdown(f"👤 Debtor: **{selected['Debtor']}**")
+    st.markdown(f"🏦 Creditor: **{selected['Creditor']}**")
+    st.markdown(f"🌍 Country: **{selected['Country']}**")
+    st.markdown(f"📄 Purpose Code: **{selected['Purpose Code']}**")
+    st.markdown(f"🔗 LEI: **{selected['LEI'] or 'Missing'}**")
+    st.markdown(f"🚨 Sanction Match: **{'Yes' if selected['Sanction Match'] else 'No'}**")
+    st.info(f"{selected['Risk Summary']}")
+    if selected['Sources']:
+        st.warning(f"📚 Flagged against: {', '.join(selected['Sources'])}")
