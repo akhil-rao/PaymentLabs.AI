@@ -20,7 +20,8 @@ uploaded_pacs008 = st.file_uploader("Upload pacs.008 XML File (.xml)", type=["xm
 
 # Utility functions
 def extract_uetr_mt103(text):
-    match = re.search(r":121:([A-Za-z0-9\-]+)", text)
+    # Match UETR in either {3:{121:<UETR>}} or :121:<UETR>
+    match = re.search(r"(?:\{3:\{)?121[:}]([A-Za-z0-9\-]+)", text)
     return match.group(1).strip() if match else None
 
 def extract_fields_pacs008(xml_content):
