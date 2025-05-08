@@ -29,16 +29,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---- Main Banner Logo ----
-st.markdown(
-    """
-    <div style='text-align: center;'>
-        <img src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhEQwVB3xOa8g1-Wzo06ufMf04Cw3IXQA9yzuUXq-OGoXb86tNh0FiLP6MLZWJkKsxnkJK8VemqhnVocrxztBzmjAFFeNH-TsAZ58WynqNRbfKf7w32ExKkRQGmFRSFfKHrsXhLp7bB5Beb9l4B39pi1ggnyyIZVjeTS4sc5J2YibAdhFAGNMYRTlbt_RqE/s16000/PaymentLabsAi_PNG.png' width='300'/>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 # ---- Main Content ----
 st.markdown("## Welcome to PaymentLabs.AI Sandbox")
 st.markdown("A next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payments.")
