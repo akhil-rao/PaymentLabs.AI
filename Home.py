@@ -33,11 +33,13 @@ st.markdown(
 st.markdown("## PaymentLabs.AI")
 st.markdown("**Cross-Border Payments Sandbox where AI meets ISO 20022 Structured Data.**")
 
-st.markdown("### 🧩 Available Modules:")
-st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Now LIVE! Repair and enrich Swift CBPR+ payment messages with AI assistance.")
-st.success("🔷 **Structured Address Validation** — Now LIVE! Validate and structure postal addresses with zero data loss.")
-st.success("🔷 **Advanced Reporting (NLP-Based)** — Now LIVE! Generate smart cross-border payment reports from natural language input.")
-st.success("🔷 **Fraud Risk Investigator** — Now LIVE! Simulate fraud detection using structured ISO 20022 fields and global rules.")
+st.markdown("### 🧩 Now Live:")
+st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Repair and enrich Swift CBPR+ payment messages with AI assistance.")
+st.success("🔷 **Structured Address Validation** — Validate and structure postal addresses with zero data loss.")
+st.success("🔷 **Advanced Reporting (NLP-Based)** — Generate smart cross-border payment reports from natural language input.")
+st.success("🔷 **Fraud Risk Investigator** — Simulate fraud detection using structured ISO 20022 fields and global rules.")
+st.success("🔷 **Data Quality Checker** — Designed for corporates to assess and improve the quality of their ISO 20022 payment initiation data.")
+st.success("🔷 **Data Truncation and US Travel Rule Identification** — Detect truncation and check compliance with the US Travel Rule.")
 
 st.markdown("---")
 st.markdown("### 🧪 Upcoming Smart Agents:")
