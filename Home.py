@@ -30,8 +30,8 @@ st.markdown(
 )
 
 # ---- Main Content ----
-st.markdown("## Welcome to PaymentLabs.AI Sandbox")
-st.markdown("A next-generation workspace where **AI** meets **ISO 20022 structured data** to transform cross-border payments.")
+st.markdown("## PaymentLabs.AI")
+st.markdown("**Cross-Border Payments Sandbox where AI meets ISO 20022 Structured Data.**")
 
 st.markdown("### 🧩 Available Modules:")
 st.success("🔷 **Swift CBPR+ Structured Payment Copilot** — Now LIVE! Repair and enrich Swift CBPR+ payment messages with AI assistance.")
