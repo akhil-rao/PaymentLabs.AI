@@ -71,3 +71,10 @@ if st.button("📜 View Audit Trail"):
     st.subheader("🔍 Audit Trail Log")
     audit_df = pd.DataFrame(st.session_state.audit_log)
     st.dataframe(audit_df, use_container_width=True)
+
+# Required packages for this module:
+# streamlit
+# lxml
+# pandas
+# matplotlib
+# openpyxl
