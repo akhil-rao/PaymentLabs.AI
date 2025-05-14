@@ -27,6 +27,19 @@ full_pacs008_data = {
     "<Purp>": ""
 }
 
+# Full MT103 equivalent (read-only)
+mt103_data = {
+    ":20:": "wS4",
+    ":23B:": "CRED",
+    ":32A:": "230524USD4001,",
+    ":50F:": "1/ABC\n2/Leicester Road,18 16\n3/Singapore,358828",
+    ":52A:": "SBININBB",
+    ":57A:": "CITIUS33",
+    ":59F:": "1/VOLKSWAGEN AG\n2/Pine Grove,18 02 25\n3/Singapore,597594",
+    ":70:": "/ROC/Invoice ref 330///URI/Payment is related to trade shipment from Maersk favouring DP World, Dubai, passing through Osmani Digna Port Su",
+    ":71A:": "SHA"
+}
+
 # Define editable fields (only safe-to-edit)
 editable_fields = ["<RmtInf><Ustrd>", "<ChrgBr>", "<Purp>"]
 
@@ -40,31 +53,41 @@ st.set_page_config(page_title="MT-MX Edit Window")
 st.title("🧾 MT-MX Edit Window")
 
 st.markdown("---")
-st.subheader("✍️ pacs.008 Message View")
+col1, col2 = st.columns(2)
 
-for field, value in st.session_state.pacs008_data.items():
-    if field in editable_fields:
-        st.markdown(f"<span style='color:green;font-weight:bold'>{field}</span>", unsafe_allow_html=True)
-        new_value = st.text_input("", value, key=field)
-        if new_value != value:
-            uetr = str(uuid.uuid4())
-            st.session_state.audit_log.append({
-                "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                "Session ID (UETR)": uetr,
-                "User (Login ID)": "daniel@example.com",
-                "Role": "Analyst",
-                "Field": field,
-                "Source": "MX",
-                "Action Type": "edit",
-                "Old Value": value,
-                "New Value": new_value,
-                "Justification": "Auto-logged from UI edit",
-                "Reverted": "No"
-            })
-            st.session_state.pacs008_data[field] = new_value
-    else:
+# Display full MT103 (read-only)
+with col1:
+    st.subheader("📄 Full SWIFT MT103 (Read-only)")
+    for field, value in mt103_data.items():
         st.markdown(f"**{field}**")
-        st.text_input("", value, key=field, disabled=True)
+        st.text_area("", value, disabled=True)
+
+# Display full pacs.008 with editable fields
+with col2:
+    st.subheader("✍️ Full pacs.008 (Editable Fields Highlighted)")
+    for field, value in st.session_state.pacs008_data.items():
+        if field in editable_fields:
+            st.markdown(f"<span style='color:green;font-weight:bold'>{field}</span>", unsafe_allow_html=True)
+            new_value = st.text_input("", value, key=field)
+            if new_value != value:
+                uetr = str(uuid.uuid4())
+                st.session_state.audit_log.append({
+                    "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "Session ID (UETR)": uetr,
+                    "User (Login ID)": "daniel@example.com",
+                    "Role": "Analyst",
+                    "Field": field,
+                    "Source": "MX",
+                    "Action Type": "edit",
+                    "Old Value": value,
+                    "New Value": new_value,
+                    "Justification": "Auto-logged from UI edit",
+                    "Reverted": "No"
+                })
+                st.session_state.pacs008_data[field] = new_value
+        else:
+            st.markdown(f"**{field}**")
+            st.text_input("", value, key=field, disabled=True)
 
 st.markdown("---")
 if st.button("📜 View Audit Trail"):
