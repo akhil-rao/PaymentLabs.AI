@@ -36,8 +36,8 @@ if "pacs008_data" not in st.session_state:
 if "audit_log" not in st.session_state:
     st.session_state.audit_log = []
 
-st.set_page_config(page_title="Page 14 - Full pacs.008 with Audit Trail")
-st.title("🧾 Page 14: Full pacs.008 Viewer with Editable Fields and Audit Trail")
+st.set_page_config(page_title="MT-MX Edit Window")
+st.title("🧾 MT-MX Edit Window")
 
 st.markdown("---")
 st.subheader("✍️ pacs.008 Message View")
